@@ -1,212 +1,175 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() {
-  runApp(const DoctorSearchApp());
+  runApp(const LoanCalculatorApp());
 }
 
-class DoctorSearchApp extends StatelessWidget {
-  const DoctorSearchApp({super.key});
+class LoanCalculatorApp extends StatelessWidget {
+  const LoanCalculatorApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Doctor Search',
+      title: 'Loan Calculator',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const DoctorSearchHomePage(),
+      home: const LoanCalculatorHomePage(),
     );
   }
 }
 
-class DoctorSearchHomePage extends StatefulWidget {
-  const DoctorSearchHomePage({super.key});
+class LoanCalculatorHomePage extends StatefulWidget {
+  const LoanCalculatorHomePage({super.key});
 
   @override
-  State<DoctorSearchHomePage> createState() => _DoctorSearchHomePageState();
+  State<LoanCalculatorHomePage> createState() => _LoanCalculatorHomePageState();
 }
 
-class _DoctorSearchHomePageState extends State<DoctorSearchHomePage> {
+class _LoanCalculatorHomePageState extends State<LoanCalculatorHomePage> {
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _interestController = TextEditingController();
+  double _months = 1;
+  String _monthlyPayment = '';
+
+  void _calculatePayment() {
+    final double? amount = double.tryParse(_amountController.text);
+    final double? interest = double.tryParse(_interestController.text);
+
+    if (amount == null || interest == null) {
+      setState(() {
+        _monthlyPayment = 'Enter valid values.';
+      });
+    } else if (amount <= 0) {
+      setState(() {
+        _monthlyPayment = 'Amount must be greater than zero.';
+      });
+    } else {
+      double monthlyInterestRate = interest / 100;
+      double denominator = pow(1 + monthlyInterestRate, _months) - 1;
+
+      if (monthlyInterestRate == 0) {
+        double monthlyPayment = amount / _months;
+        setState(() {
+          _monthlyPayment = monthlyPayment.toStringAsFixed(2);
+        });
+      } else if (denominator == 0) {
+        setState(() {
+          _monthlyPayment = 'Invalid interest rate or duration.';
+        });
+      } else {
+        double monthlyPayment =
+            (amount * monthlyInterestRate * pow(1 + monthlyInterestRate, _months)) / denominator;
+
+        setState(() {
+          _monthlyPayment = monthlyPayment.toStringAsFixed(2);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doctor Search'),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.location_on, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Seattle, USA',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.person),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search doctor...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Categories',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 100,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _buildCategoryCard(Icons.health_and_safety, 'Dentistry'),
-                    _buildCategoryCard(Icons.favorite, 'Cardiology'),
-                    _buildCategoryCard(Icons.medical_services, 'Pulmonology'),
-                    _buildCategoryCard(Icons.local_hospital, 'General'),
-                    _buildCategoryCard(Icons.healing, 'Neurology'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Nearby Medical Centers',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 180,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _buildMedicalCenterCard('Sunrise Health Clinic', '5.0', '2.5 km'),
-                    _buildMedicalCenterCard('Golden Cardio Clinic', '4.9', '2.5 km'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                '532 Found',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              _buildDoctorCard('Dr. David Patel', 'Cardiologist', '4.9', '1,337 Reviews'),
-              _buildDoctorCard('Dr. Jessica Turner', 'Gynecologist', '4.9', '1,337 Reviews'),
-              _buildDoctorCard('Dr. Michael Johnson', 'Orthopedic Surgery', '4.7', '1,337 Reviews'),
-              _buildDoctorCard('Dr. Maxim Marcinkevich', 'Pediatrics', '5.0', '1488 Reviews'),
-            ],
+        title: const Center(
+          child: Text(
+            'Loan Calculator',
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildCategoryCard(IconData icon, String title) {
-    return Container(
-      margin: const EdgeInsets.only(right: 10),
-      width: 80,
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.blue[100],
-            child: Icon(icon, size: 30, color: Colors.blue),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMedicalCenterCard(String name, String rating, String distance) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16),
-      width: 250,
-      child: Card(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/T._Mosneaga_Republican_Clinical_Hospital_2023.jpg/640px-T._Mosneaga_Republican_Clinical_Hospital_2023.jpg',
-              height: 100,
-              width: double.infinity,
-              fit: BoxFit.cover,
+            const Text(
+              'Enter amount',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            TextField(
+              controller: _amountController,
+              decoration: const InputDecoration(
+                hintText: 'Amount',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Enter number of months',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            Slider(
+              value: _months,
+              min: 1,
+              max: 60,
+              divisions: 59,
+              label: '${_months.toInt()} luni',
+              onChanged: (value) {
+                setState(() {
+                  _months = value;
+                });
+              },
+              activeColor: Colors.blue,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Enter % per month',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            TextField(
+              controller: _interestController,
+              decoration: const InputDecoration(
+                hintText: 'Percent',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 40),
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8.0),
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  const Text(
+                    'You will pay the approximate amount monthly:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.orange, size: 16),
-                      const SizedBox(width: 4),
-                      Text(rating),
-                      const SizedBox(width: 10),
-                      Text(distance),
-                    ],
+                  const SizedBox(height: 10),
+                  Text(
+                    _monthlyPayment.isEmpty ? '0.00€' : '$_monthlyPayment€',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDoctorCard(String name, String specialization, String rating, String reviews) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue[100],
-          child: const Icon(Icons.person, color: Colors.blue),
-        ),
-        title: Text(name),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(specialization),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(Icons.star, color: Colors.orange, size: 16),
-                const SizedBox(width: 4),
-                Text(rating),
-                const SizedBox(width: 10),
-                Text(reviews),
-              ],
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                ),
+                onPressed: _calculatePayment,
+                child: const Text(
+                  'Calculate',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         ),
-        trailing: const Icon(Icons.favorite_border),
       ),
     );
   }
