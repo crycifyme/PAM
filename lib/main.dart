@@ -42,12 +42,10 @@ class _DoctorSearchHomePageState extends State<DoctorSearchHomePage> {
   }
 
   Future<void> loadData() async {
-    // Load JSON data from assets
     final String jsonString = await rootBundle.loadString('assets/v1.json');
     final Map<String, dynamic> jsonData = jsonDecode(jsonString);
 
     setState(() {
-      // Parse JSON data
       categories = (jsonData['categories'] as List)
           .map((e) => Category.fromJson(e))
           .toList();
@@ -259,7 +257,6 @@ class _DoctorSearchHomePageState extends State<DoctorSearchHomePage> {
   }
 }
 
-// Models
 class Category {
   final String title;
   final String icon;
